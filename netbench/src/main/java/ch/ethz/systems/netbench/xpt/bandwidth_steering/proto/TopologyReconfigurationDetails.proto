@@ -1,0 +1,59 @@
+syntax = "proto2";
+
+package topology_reconfiguration;
+
+option java_package = "ch.ethz.systems.netbench.xpt.bandwidth_steering.proto";
+option java_outer_classname = "TopologyReconfigurationEventsProtos";
+
+
+message InterpodPathWeight {
+	// The source pod id of this path.
+	optional int64 src_pod = 1;
+
+	// The destination pod id of this path.
+	optional int64 dst_pod = 2;
+
+	// The intermediate pod to which this path traverses.
+	optional int64 intermediate_pod = 3;
+
+	// The weights for traffic assigned to this path, must be between 0 and 1.
+	optional double weight = 4;
+}
+
+message InterpodRoutingWeights {
+	// A specific entry for a interpod path, and 
+	repeated InterpodPathWeight interpod_weight = 1;
+}
+
+message SwitchingDetail {
+	// The switch id for the device whose output port is about to undergo circuit switching
+	optional int64 src_switch_id = 1;
+
+	// The destination id of the port is connected to
+	optional int64 dst_switch_id = 2;
+
+	// The port id of the output port that is about to be switched
+	optional int64 during_link_multiplicity = 3;
+
+	// After switching is done, the target switch id.
+	optional int64 after_link_multiplicity = 4;
+}
+
+message TopologyReconfigurationEvent {
+	// The routing weights during the reconfiguration, when the network may be at a reduced capacity
+	optional InterpodRoutingWeights during_routing_weights = 1;
+
+	// The routing weights used once reconfiguration is completed.
+	optional InterpodRoutingWeights after_routing_weights = 2;
+
+	// A sequence of switching details, from which we know which switch's specific port should be reconfigured.
+	repeated SwitchingDetail detail = 3;
+}
+
+message TopologyReconfigurationEvents {
+	// A sequence of increasing integers, each representing the nanoseconds from the starting time.
+	repeated int64 epoch_nanosecond = 1;  
+
+	// A sequence of reconfiguration events, which contains the details needed to know which switches need to be reconfigured.
+	repeated TopologyReconfigurationEvent reconfiguration_event = 2;
+}
