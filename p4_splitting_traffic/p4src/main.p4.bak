@@ -1,0 +1,100 @@
+#include "includes/headers.p4"
+#include "includes/parser.p4"
+#include "includes/actions.p4"
+#include "includes/tofino.p4"
+
+#include "ipg_monitor.p4"
+#include "l2_switch.p4"
+
+action do_multicast(rid, yid, brid, h1, h2) {
+    modify_field(ig_intr_md_for_tm.rid, rid);
+    modify_field(ig_intr_md_for_tm.level2_exclusion_id, yid);
+    modify_field(ig_intr_md_for_tm.level1_mcast_hash, h1);
+    modify_field(ig_intr_md_for_tm.level2_mcast_hash, h2);
+    modify_field(ig_intr_md_for_tm.mcast_grp_a, brid);
+}
+table simple_rc_mcast {
+    reads {
+        ig_intr_md.ingress_port : exact;
+    }
+    actions {
+        do_multicast; nop;
+    }
+    default_action : nop;
+}
+control simple_rate_control {
+    apply(simple_rc_mcast);
+}
+
+action a(){
+    subtract_from_field(ipv4.ttl, 1);
+}
+
+@pragma stage 4
+table placeholder4 {
+    actions {
+	a;
+    }
+    default_action : a;
+}
+
+
+@pragma stage 5
+table placeholder5 {
+    actions {
+	a;
+    }
+    default_action : a;
+}
+@pragma stage 6
+table placeholder6 {
+    actions {
+	a;
+    }
+    default_action : a;
+}
+@pragma stage 7
+table placeholder7 {
+    actions {
+	a;
+    }
+    default_action : a;
+}
+@pragma stage 8
+table placeholder8 {
+    actions {
+	a;
+    }
+    default_action : a;
+}
+@pragma stage 9
+table placeholder9 {
+    actions {
+	a;
+    }
+    default_action : a;
+}
+@pragma stage 10
+table placeholder10 {
+    actions {
+	a;
+    }
+    default_action : a;
+}
+
+control ingress {
+    //ipg_monitor(); 
+    //apply(placeholder4);
+    //apply(placeholder5);
+    //apply(placeholder6);
+    //apply(placeholder7);
+    //apply(placeholder8);
+    //apply(placeholder9);
+    //apply(placeholder10);
+    apply(l2_forward);
+    //simple_rate_control();
+}
+
+control egress {
+}
+
